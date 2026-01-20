@@ -1,0 +1,22 @@
+backend:
+  name: git-gateway
+  branch: main
+
+media_folder: "images"
+public_folder: "/images"
+
+collections:
+  - name: "home"
+    label: "Home Page"
+    files:
+      - file: "content/home.yml"
+        label: "Home Content"
+        name: "home"
+        fields:
+          - { label: "Main Headline", name: "headline", widget: "string" }
+          - { label: "Subtitle Text", name: "subtitle", widget: "text" }
+          - { label: "Phone Number", name: "phone", widget: "string" }
+          - { label: "Background Image 1", name: "bg1", widget: "image" }
+          - { label: "Background Image 2", name: "bg2", widget: "image" }
+          - { label: "Background Image 3", name: "bg3", widget: "image" }
+          - { label: "Background Image 4", name: "bg4", widget: "image" }
