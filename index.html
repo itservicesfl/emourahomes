@@ -78,7 +78,7 @@
 
     /* 👉 Replace these URLs with your own 16:9 images */
     .bg-slide.slide-1 {
-      background-image: url("https://upload.wikimedia.org/wikipedia/commons/5/59/Jade_Signature%2C_Jade_Beach%2C_Jade_Ocean%2C_Muse%2C_Ocean_4%2C_Chateau_Beach_March_2018_Sunny_Isles.jpg"); /* front of modern home */
+      background-image: url("/img/01.jpg"); /* front of modern home */
       animation-delay: 0s;
     }
 
@@ -603,7 +603,7 @@
       </div>
       <div class="contact-top">        
         <span>Questions? Call or text:</span>
-        <a href="tel:+13055827746">(305) 582-7746</a>
+        <a id="phone-link" href="tel:+13055827746">(305) 582-7746</a>
       </div>
     </header>
 
@@ -614,10 +614,8 @@
             <span class="eyebrow-line"></span>
             Miami Home Value • 2026 Market
           </div>
-          <h1>
-            Discover the <span class="highlight">True Value</span> of Your Miami Home
-          </h1>
-          <p class="hero-subtitle">
+          <h1 id="headline">Discover the <span class="highlight">True Value</span> of Your Miami Home</h1>
+          <p id="subtitle" class="hero-subtitle">
             I’m <strong>Ezequiel Moura</strong>, your Miami real estate specialist. Get a data-driven, custom report on your
             home’s current value — plus 3 strategic moves you can make <em>right now</em> to increase your property value.
           </p>
@@ -713,5 +711,28 @@
     // Simple script to keep the year current
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>
+
+<script src="https://unpkg.com/js-yaml@4/dist/js-yaml.min.js"></script>
+<script>
+fetch('/content/home.yml')
+  .then(res => res.text())
+  .then(text => {
+    const data = jsyaml.load(text);
+
+    document.getElementById('headline').innerHTML =
+      data.headline.replace("True Value", "<span class='highlight'>True Value</span>");
+
+    document.getElementById('subtitle').innerText = data.subtitle;
+
+    document.getElementById('phone-link').innerText = data.phone;
+    document.getElementById('phone-link').href = "tel:" + data.phone.replace(/\D/g,'');
+
+    document.querySelector('.slide-1').style.backgroundImage = `url(${data.bg1})`;
+    document.querySelector('.slide-2').style.backgroundImage = `url(${data.bg2})`;
+    document.querySelector('.slide-3').style.backgroundImage = `url(${data.bg3})`;
+    document.querySelector('.slide-4').style.backgroundImage = `url(${data.bg4})`;
+  });
+</script>
+
 </body>
 </html>
