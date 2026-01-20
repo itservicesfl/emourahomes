@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Miami Real Estate | Ezequiel Moura | EMouraHomes.com</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Miami real estate expert Ezequiel Moura helps homeowners understand their current home value and how to increase it. Get your free customized home value report today.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0f9d9a;
+      --primary-dark: #047b78;
+      --accent: #ffb347;
+      --bg: #050816;
+      --bg-alt: #0b1020;
+      --text: #f9fafb;
+      --muted: #9ca3af;
+      --card-bg: rgba(15, 23, 42, 0.88);
+      --border-subtle: rgba(148, 163, 184, 0.4);
+      --radius-xl: 1.5rem;
+      --shadow-soft: 0 22px 45px rgba(15, 23, 42, 0.6);
+      --shadow-light: 0 10px 30px rgba(15, 23, 42, 0.5);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #020617;
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* ------------------------
+       Animated Background
+    ------------------------- */
+
+    /* Fullscreen background container */
+    .bg-slideshow {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -3;
+      overflow: hidden;
+    }
+
+    /* Each slide fills the viewport */
+    .bg-slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      opacity: 0;
+      transform: scale(1.05);
+      animation: slideShow 32s infinite ease-in-out;
+    }
+
+    /* 👉 Replace these URLs with your own 16:9 images */
+    .bg-slide.slide-1 {
+      background-image: url("https://upload.wikimedia.org/wikipedia/commons/5/59/Jade_Signature%2C_Jade_Beach%2C_Jade_Ocean%2C_Muse%2C_Ocean_4%2C_Chateau_Beach_March_2018_Sunny_Isles.jpg"); /* front of modern home */
+      animation-delay: 0s;
+    }
+
+    .bg-slide.slide-2 {
+      background-image: url("/img/02.png"); /* aerial city / condos */
+      animation-delay: 8s;
+    }
+
+    .bg-slide.slide-3 {
+      background-image: url("/img/03.png"); /* waterfront property */
+      animation-delay: 16s;
+    }
+
+    .bg-slide.slide-4 {
+      background-image: url("/img/04.png"); /* skyline / aerial */
+      animation-delay: 24s;
+    }
+    @keyframes slideShow {
+      0%   { opacity: 0; transform: scale(1.04); }
+      5%   { opacity: 1; transform: scale(1.02); }
+      20%  { opacity: 1; transform: scale(1); }
+      25%  { opacity: 0; transform: scale(1.04); }
+      100% { opacity: 0; transform: scale(1.04); }
+    }
+
+    /* Brighter overlay so background is visible but text readable */
+    .bg-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -2;
+      background:
+        radial-gradient(
+          circle at top,
+          rgba(15, 23, 42, 0.10) 0%,
+          rgba(15, 23, 42, 0.38) 55%
+        ),
+        linear-gradient(
+          to bottom,
+          rgba(3, 7, 18, 0.32),
+          rgba(3, 7, 18, 0.48)
+        );
+      pointer-events: none;
+    }
+
+    /* ------------------------
+       Layout & Typography
+    ------------------------- */
+
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 3rem;
+      width: 100%;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.75rem 1rem 1.5rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 1.25rem;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.1rem;
+      box-shadow: var(--shadow-soft);
+      letter-spacing: 0.06em;
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+    }
+
+    .brand-text strong {
+      text-transform: uppercase;
+      font-size: 0.9rem;
+      letter-spacing: 0.16em;
+    }
+
+    .brand-text span {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .contact-top {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.15rem;
+      text-align: right;
+    }
+
+    .contact-top span {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .contact-top a {
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.65rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      backdrop-filter: blur(12px);
+      background: rgba(15, 23, 42, 0.55);
+    }
+
+    .chip-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: radial-gradient(circle, #34d399, #22c55e);
+      box-shadow: 0 0 10px rgba(52, 211, 153, 0.9);
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+      gap: 2.5rem;
+      align-items: stretch;
+      padding: 0 1rem;
+    }
+
+    @media (max-width: 900px) {
+      main {
+        grid-template-columns: minmax(0, 1fr);
+        padding: 0;
+      }
+
+      .contact-top {
+        align-items: flex-start;
+        text-align: left;
+      }
+    }
+
+    .hero-copy {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 1.75rem;
+      padding-right: 0.75rem;
+    }
+
+    .eyebrow {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+    }
+
+    .eyebrow-line {
+      width: 42px;
+      height: 1px;
+      background: linear-gradient(to right, var(--primary), transparent);
+      opacity: 0.7;
+    }
+
+    h1 {
+      font-size: clamp(2.1rem, 3vw, 2.9rem);
+      line-height: 1.1;
+      font-weight: 600;
+      text-shadow: 0 18px 35px rgba(15, 23, 42, 0.9);
+    }
+
+    h1 span.highlight {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero-subtitle {
+      font-size: 0.98rem;
+      color: var(--muted);
+      max-width: 32rem;
+      text-shadow: 0 14px 30px rgba(3, 7, 18, 0.9);
+    }
+
+    .hero-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+    }
+
+    .pill {
+      font-size: 0.78rem;
+      border-radius: 999px;
+      padding: 0.35rem 0.85rem;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      color: var(--muted);
+      backdrop-filter: blur(18px);
+      background: linear-gradient(120deg, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.4));
+      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.8);
+    }
+
+    .pill strong {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .hero-footer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      align-items: center;
+    }
+
+    .hero-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-shadow: 0 16px 35px rgba(3, 7, 18, 0.9);
+    }
+
+    .hero-badge-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      background: rgba(15, 23, 42, 0.7);
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.9);
+    }
+
+    .hero-badge strong {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .hero-miami-tag {
+      font-size: 0.78rem;
+      color: var(--muted);
+      border-left: 2px solid rgba(148, 163, 184, 0.6);
+      padding-left: 0.75rem;
+      max-width: 16rem;
+      text-shadow: 0 14px 32px rgba(3, 7, 18, 0.9);
+    }
+
+    .form-card-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .form-card {
+      width: 100%;
+      max-width: 430px;
+      border-radius: var(--radius-xl);
+      padding: 1.75rem 1.5rem 1.5rem;
+      background: radial-gradient(circle at top, rgba(34, 211, 238, 0.12), transparent 55%),
+                  linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.94));
+      box-shadow: var(--shadow-soft);
+      border: 1px solid var(--border-subtle);
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(22px);
+    }
+
+    .form-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at -10% 0%, rgba(56, 189, 248, 0.3), transparent 55%),
+        radial-gradient(circle at 110% 100%, rgba(251, 191, 36, 0.25), transparent 60%);
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .form-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .form-tagline {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: #e5e7eb;
+      margin-bottom: 0.3rem;
+    }
+
+    .form-title {
+      font-size: 1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      line-height: 1.3;
+    }
+
+    .form-title strong {
+      display: block;
+      font-size: 1.05rem;
+    }
+
+    .form-subtitle {
+      margin-top: 0.55rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .form-subtitle span {
+      font-weight: 500;
+      color: #e5e7eb;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.9rem;
+      margin-top: 1.1rem;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .field label {
+      font-size: 0.78rem;
+      color: #cbd5f5;
+      font-weight: 500;
+    }
+
+    .field label span {
+      color: #fbbf24;
+    }
+
+    .field input,
+    .field textarea {
+      border-radius: 0.9rem;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      background: rgba(15, 23, 42, 0.95);
+      padding: 0.74rem 0.85rem;
+      color: var(--text);
+      font-size: 0.86rem;
+      outline: none;
+      transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease, transform 0.08s ease;
+    }
+
+    .field input::placeholder,
+    .field textarea::placeholder {
+      color: rgba(148, 163, 184, 0.8);
+    }
+
+    .field input:focus,
+    .field textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.3);
+      background: rgba(15, 23, 42, 1);
+      transform: translateY(-1px);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 72px;
+      max-height: 120px;
+    }
+
+    .submit-row {
+      margin-top: 0.6rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+
+    .btn-submit {
+      border: none;
+      border-radius: 999px;
+      padding: 0.85rem 1.1rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      background: linear-gradient(135deg, var(--accent), #f97316);
+      color: #111827;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      box-shadow: 0 20px 35px rgba(15, 23, 42, 0.85);
+      transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+    }
+
+    .btn-submit span.icon {
+      font-size: 1rem;
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-1px) translateZ(0);
+      box-shadow: 0 26px 40px rgba(15, 23, 42, 0.95);
+      filter: brightness(1.03);
+    }
+
+    .btn-submit:active {
+      transform: translateY(0) scale(0.98);
+      box-shadow: 0 18px 28px rgba(15, 23, 42, 0.9);
+    }
+
+    .trust-note {
+      font-size: 0.7rem;
+      color: rgba(209, 213, 219, 0.85);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      opacity: 0.95;
+    }
+
+    .trust-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 8px rgba(34, 197, 94, 0.8);
+    }
+
+    footer {
+      margin-top: 3rem;
+      padding: 0 1rem;
+      font-size: 0.75rem;
+      color: #6b7280;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: space-between;
+      border-top: 1px solid rgba(31, 41, 55, 0.9);
+      padding-top: 1.4rem;
+      text-shadow: 0 12px 30px rgba(3, 7, 18, 0.9);
+    }
+
+    .footer-left {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .footer-right {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-link {
+      cursor: pointer;
+      position: relative;
+      padding-bottom: 0.1rem;
+    }
+
+    .footer-link::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 0;
+      height: 1px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transition: width 0.18s ease;
+    }
+
+    .footer-link:hover::after {
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <!-- Animated property background -->
+  <div class="bg-slideshow">
+    <div class="bg-slide slide-1"></div>
+    <div class="bg-slide slide-2"></div>
+    <div class="bg-slide slide-3"></div>
+    <div class="bg-slide slide-4"></div>
+  </div>
+  <div class="bg-overlay"></div>
+
+  <div class="page">
+    <header>
+      <div class="brand">
+        <div class="brand-logo">EM</div>
+        <div class="brand-text">
+          <strong>EMourahomes.com</strong>
+          <span>Miami Real Estate • Ezequiel Moura</span>
+        </div>
+      </div>
+      <div class="contact-top">        
+        <span>Questions? Call or text:</span>
+        <a href="tel:+13055827746">(305) 582-7746</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero-copy">
+        <div>
+          <div class="eyebrow">
+            <span class="eyebrow-line"></span>
+            Miami Home Value • 2026 Market
+          </div>
+          <h1>
+            Discover the <span class="highlight">True Value</span> of Your Miami Home
+          </h1>
+          <p class="hero-subtitle">
+            I’m <strong>Ezequiel Moura</strong>, your Miami real estate specialist. Get a data-driven, custom report on your
+            home’s current value — plus 3 strategic moves you can make <em>right now</em> to increase your property value.
+          </p>
+        </div>
+
+        <div class="hero-pills">
+          <div class="pill"><strong>Hyper-local insight</strong> based on your neighborhood</div>
+          <div class="pill">No automated guesses — <strong>human-reviewed</strong></div>
+          <div class="pill">Tailored for <strong>Miami-Dade &amp; Broward</strong> homeowners</div>
+        </div>
+
+        <div class="hero-footer">
+          <div class="hero-badge">
+            <div class="hero-badge-icon">★</div>
+            <div>
+              <strong>Trusted Advisor</strong><br />
+              <span>Buy, sell, or hold with confidence.</span>
+            </div>
+          </div>
+          <div class="hero-miami-tag">
+            Serving Brickell • Edgewater • Miami Beach • North Bay Village and surrounding areas.
+          </div>
+        </div>
+      </section>
+
+      <section class="form-card-wrapper">
+        <div class="form-card">
+          <div class="form-inner">
+            <div class="form-tagline">Free Personalized Report</div>
+            <div class="form-title">
+              FREE CUSTOMIZED REPORT REVEALS
+              <strong>
+                The current value OF YOUR HOUSE &
+                The 3 Things ANY Homeowner can do to Increase their property value
+              </strong>
+            </div>
+            <div class="form-subtitle">
+              Enter your details below and I’ll send you a
+              <span>custom home value report</span> — not a generic online estimate.
+            </div>
+
+            <form action="https://formspree.io/f/xykkjjqn" method="post" class="form-grid">
+              <div class="field">
+                <label for="name">Name <span>*</span></label>
+                <input type="text" id="name" name="name" placeholder="Full Name" required />
+              </div>
+
+              <div class="field">
+                <label for="email">E-mail <span>*</span></label>
+                <input type="email" id="email" name="email" placeholder="your@email.com" required />
+              </div>
+
+              <div class="field">
+                <label for="phone">Phone Number <span>*</span></label>
+                <input type="tel" id="phone" name="phone" placeholder="(XXX) XXX-XXXX" required />
+              </div>
+
+              <div class="field">
+                <label for="address">Property Address <span>*</span></label>
+                <textarea id="address" name="address" placeholder="Street, City, ZIP" required></textarea>
+              </div>
+
+              <div class="submit-row">
+                <button type="submit" class="btn-submit">
+                  <span>Tell Me My Value</span>
+                  <span class="icon">➜</span>
+                </button>
+                <div class="trust-note">
+                  <span class="trust-dot"></span>
+                  <span>Your information is kept private. No spam, ever.</span>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="footer-left">
+        <span>&copy; <span id="year"></span> EMouraHomes.com — Miami Real Estate with Ezequiel Moura.</span>
+        <span>All information deemed reliable but not guaranteed.</span>
+      </div>
+      <div class="footer-right">
+        <span class="footer-link">Privacy Policy</span>
+        <span class="footer-link">Disclaimer</span>
+        <span class="footer-link">Contact</span>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // Simple script to keep the year current
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
