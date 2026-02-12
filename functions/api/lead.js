@@ -240,6 +240,15 @@ async function sendLeadEmail({ apiKey, to, from, subject, text, html, replyTo })
     }
 }
 
+function escapeHtml(s) {
+    return String(s ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+}
+
 
 function json(data, status = 200) {
     return new Response(JSON.stringify(data), {
