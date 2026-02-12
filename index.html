@@ -190,7 +190,6 @@
 <body>
     <div class="wrap">
         <div class="grid">
-            <!-- Main Wizard Card -->
             <div class="card">
                 <div class="stepbar" aria-label="Progress">
                     <div class="dot on"></div>
@@ -199,3 +198,92 @@
                     <div class="dot"></div>
                     <div class="dot"></div>
                 </div>
+
+                <h1>Get your home value estimate</h1>
+                <p>Start by entering the property address. Then we’ll ask a few quick details and generate an estimate.</p>
+
+                <form id="step1">
+                    <div class="row">
+                        <div class="col">
+                            <label for="address">Property address</label>
+                            <input id="address" name="address" placeholder="123 Main St, City, State" autocomplete="street-address" />
+                        </div>
+
+                        <div class="col">
+                            <label for="ptype">Property type</label>
+                            <select id="ptype" name="ptype">
+                                <option value="">Select…</option>
+                                <option>Single-family home</option>
+                                <option>Condo / Apartment</option>
+                                <option>Townhome</option>
+                                <option>Multi-family</option>
+                                <option>Land</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="btnrow">
+                        <button class="btn" type="submit">Continue</button>
+                        <a class="btn secondary" href="https://www.emourahomes.com" target="_blank" rel="noreferrer">Visit EMouraHomes.com</a>
+                        <span class="muted">Nationwide USA</span>
+                    </div>
+
+                    <div class="error" id="err"></div>
+                    <div class="ok" id="ok"></div>
+                </form>
+
+                <div class="muted" style="margin-top:18px;">
+                    By continuing, you agree that this is an estimate based on information provided and local market averages.
+                </div>
+            </div>
+
+            <div class="card side">
+                <div class="badge">How it works</div>
+                <h3>Fast & simple</h3>
+                <ul>
+                    <li>Enter your address</li>
+                    <li>Add property details (sqft, beds, baths, amenities)</li>
+                    <li>We compare with similar properties nationwide</li>
+                    <li>You get an estimate + option for full report</li>
+                </ul>
+                <div class="muted" style="margin-top:14px;">
+                    Next steps: we’ll add the details form and the “processing” screen with a progress bar.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('step1');
+        const err = document.getElementById('err');
+        const ok = document.getElementById('ok');
+
+        function showError(msg) {
+            ok.style.display = 'none';
+            err.textContent = msg;
+            err.style.display = 'block';
+        }
+        function showOk(msg) {
+            err.style.display = 'none';
+            ok.textContent = msg;
+            ok.style.display = 'block';
+        }
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const address = document.getElementById('address').value.trim();
+            const ptype = document.getElementById('ptype').value.trim();
+
+            if (!address || address.length < 6) return showError('Please enter a valid property address.');
+            if (!ptype) return showError('Please select a property type.');
+
+            const payload = { address, ptype, startedAt: new Date().toISOString() };
+            localStorage.setItem('emhv_lead_draft', JSON.stringify(payload));
+
+            showOk('Saved. Next step will ask for property details (sqft, beds, baths, etc).');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>
