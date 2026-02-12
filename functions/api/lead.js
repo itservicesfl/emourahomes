@@ -72,6 +72,69 @@ export async function onRequestPost(context) {
         );
 
         await stmt.run();
+        // Email notification (do NOT block saving the lead if email fails)
+        try {
+            const apiKey = context.env.RESEND_API_KEY;
+            const to = context.env.LEADS_NOTIFY_TO;
+            const from = context.env.LEADS_NOTIFY_FROM;
+
+            if (apiKey && to && from) {
+                const addr = body?.address || "(no address)";
+                const choice = leadChoice === "email_report" ? "Email report" : "Specialist call";
+
+                const estVal = estimate?.value ? `$${Number(estimate.value).toLocaleString("en-US")}` : "N/A";
+                const estLow = estimate?.low ? `$${Number(estimate.low).toLocaleString("en-US")}` : "N/A";
+                const estHigh = estimate?.high ? `$${Number(estimate.high).toLocaleString("en-US")}` : "N/A";
+
+                const subject = `New EMoura Home Value lead — ${choice}`;
+                const text =
+                    `New lead received
+
+Name: ${name}
+Choice: ${choice}
+Email: ${email || ""}
+Phone: ${phone || ""}
+Best time: ${bestTime || ""}
+
+Address: ${addr}
+Type: ${body?.ptype || ""}
+Sqft: ${body?.sqft || ""}
+Beds/Baths: ${body?.beds || ""} / ${body?.baths || ""}
+Garage: ${body?.garageSpots ?? ""}
+HOA: ${body?.hoa || ""} ${body?.hoaAmount ? `($${body.hoaAmount}/mo)` : ""}
+
+Estimate: ${estVal} (range ${estLow}–${estHigh})
+Lead ID: ${id}
+Created: ${createdAt}
+`;
+
+                const html = `
+      <h2>New lead received</h2>
+      <p><b>Name:</b> ${escapeHtml(name)}<br/>
+      <b>Choice:</b> ${escapeHtml(choice)}<br/>
+      <b>Email:</b> ${escapeHtml(email || "")}<br/>
+      <b>Phone:</b> ${escapeHtml(phone || "")}<br/>
+      <b>Best time:</b> ${escapeHtml(bestTime || "")}</p>
+
+      <p><b>Address:</b> ${escapeHtml(addr)}<br/>
+      <b>Type:</b> ${escapeHtml(body?.ptype || "")}<br/>
+      <b>Sqft:</b> ${escapeHtml(String(body?.sqft || ""))}<br/>
+      <b>Beds/Baths:</b> ${escapeHtml(String(body?.beds || ""))} / ${escapeHtml(String(body?.baths || ""))}<br/>
+      <b>Garage:</b> ${escapeHtml(String(body?.garageSpots ?? ""))}<br/>
+      <b>HOA:</b> ${escapeHtml(String(body?.hoa || ""))} ${body?.hoaAmount ? `($${Number(body.hoaAmount).toLocaleString("en-US")}/mo)` : ""}</p>
+
+      <p><b>Estimate:</b> ${escapeHtml(estVal)} (range ${escapeHtml(estLow)}–${escapeHtml(estHigh)})</p>
+      <p><b>Lead ID:</b> ${escapeHtml(id)}<br/>
+      <b>Created:</b> ${escapeHtml(createdAt)}</p>
+    `;
+
+                await sendLeadEmail({ apiKey, to, from, subject, text, html });
+            }
+        } catch (e) {
+            // Don’t fail the request — lead is already saved.
+            // Optional: console.log(e) (but avoid logging PII)
+        }
+
 
         return json({ ok: true, id }, 200);
     } catch (e) {
@@ -91,6 +154,34 @@ function toNum(v) {
     if (Number.isNaN(n)) return null;
     return n;
 }
+
+async function sendLeadEmail({ apiKey, to, from, subject, text, html }) {
+    const resp = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${apiKey}`,
+            "content-type": "application/json"
+        },
+        body: JSON.stringify({ from, to, subject, text, html })
+    });
+
+    if (!resp.ok) {
+        const detail = await resp.text().catch(() => "");
+        throw new Error(`Resend failed: ${resp.status} ${detail.slice(0, 300)}`);
+    }
+}
+
+function escapeHtml(s) {
+    return String(s)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+}
+
+
+
 function json(data, status = 200) {
     return new Response(JSON.stringify(data), {
         status,

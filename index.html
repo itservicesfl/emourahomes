@@ -872,6 +872,7 @@
                 if (!resp.ok) throw new Error(out?.error || 'Lead submit failed');
 
                 showCtaOk('okEmail', 'Sent! Redirecting to www.emourahomes.com…');
+                localStorage.removeItem('emhv_lead_draft');
                 setTimeout(() => { window.location.href = 'https://www.emourahomes.com'; }, 900);
             } catch (err) {
                 showCtaError('errEmail', 'Could not send right now. Please try again.');
@@ -926,6 +927,7 @@
                 if (!resp.ok) throw new Error(out?.error || 'Lead submit failed');
 
                 showCtaOk('okCall', 'Sent! Redirecting to www.emourahomes.com…');
+                localStorage.removeItem('emhv_lead_draft');
                 setTimeout(() => { window.location.href = 'https://www.emourahomes.com'; }, 900);
             } catch (err) {
                 showCtaError('errCall', 'Could not send right now. Please try again.');
