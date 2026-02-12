@@ -803,41 +803,111 @@
 
 
         // CTA Forms (temporary)
-        function clearCtaMessages() {
-            ['errEmail', 'okEmail', 'errCall', 'okCall'].forEach(id => { $(id).style.display = 'none'; $(id).textContent = ''; });
-        }
-        function showCtaError(id, msg) { $(id).textContent = msg; $(id).style.display = 'block'; }
-        function showCtaOk(id, msg) { $(id).textContent = msg; $(id).style.display = 'block'; }
-
-        $('emailCta').addEventListener('submit', (e) => {
+        $('emailCta').addEventListener('submit', async (e) => {
             e.preventDefault();
             clearCtaMessages();
+
+            const d = getDraft();
             const name = $('name1').value.trim();
             const email = $('email1').value.trim();
+
             if (!name) return showCtaError('errEmail', 'Please enter your name.');
             if (!email || !email.includes('@')) return showCtaError('errEmail', 'Please enter a valid email.');
 
-            setDraft({ leadChoice: 'email_report', lead: { name, email } });
-            showCtaOk('okEmail', 'Saved. Next step: we will send this to our backend (Formspree via Worker).');
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
 
-            setTimeout(() => { window.location.href = 'https://www.emourahomes.com'; }, 1200);
+            const payload = {
+                leadChoice: 'email_report',
+                lead: { name, email },
+
+                address: d.address,
+                ptype: d.ptype,
+                sqft: d.sqft,
+                beds: d.beds,
+                baths: d.baths,
+                features: d.features,
+                garageSpots: d.garageSpots,
+                hoa: d.hoa,
+                hoaAmount: d.hoaAmount,
+
+                estimate: d.estimate
+            };
+
+            try {
+                const resp = await fetch('/api/lead', {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const out = await resp.json();
+                if (!resp.ok) throw new Error(out?.error || 'Lead submit failed');
+
+                showCtaOk('okEmail', 'Sent! Redirecting to www.emourahomes.com…');
+                setTimeout(() => { window.location.href = 'https://www.emourahomes.com'; }, 900);
+            } catch (err) {
+                showCtaError('errEmail', 'Could not send right now. Please try again.');
+                btn.disabled = false;
+                btn.textContent = 'Send report';
+            }
         });
 
-        $('callCta').addEventListener('submit', (e) => {
+
+        $('callCta').addEventListener('submit', async (e) => {
             e.preventDefault();
             clearCtaMessages();
+
+            const d = getDraft();
             const name = $('name2').value.trim();
             const phone = $('phone2').value.trim();
             const best = $('best2').value.trim();
+
             if (!name) return showCtaError('errCall', 'Please enter your name.');
             if (!phone || phone.length < 7) return showCtaError('errCall', 'Please enter a valid phone number.');
             if (!best) return showCtaError('errCall', 'Please select the best time to call.');
 
-            setDraft({ leadChoice: 'specialist_call', lead: { name, phone, best } });
-            showCtaOk('okCall', 'Saved. Next step: we will send this to our backend (Formspree via Worker).');
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
 
-            setTimeout(() => { window.location.href = 'https://www.emourahomes.com'; }, 1200);
+            const payload = {
+                leadChoice: 'specialist_call',
+                lead: { name, phone, best },
+
+                address: d.address,
+                ptype: d.ptype,
+                sqft: d.sqft,
+                beds: d.beds,
+                baths: d.baths,
+                features: d.features,
+                garageSpots: d.garageSpots,
+                hoa: d.hoa,
+                hoaAmount: d.hoaAmount,
+
+                estimate: d.estimate
+            };
+
+            try {
+                const resp = await fetch('/api/lead', {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const out = await resp.json();
+                if (!resp.ok) throw new Error(out?.error || 'Lead submit failed');
+
+                showCtaOk('okCall', 'Sent! Redirecting to www.emourahomes.com…');
+                setTimeout(() => { window.location.href = 'https://www.emourahomes.com'; }, 900);
+            } catch (err) {
+                showCtaError('errCall', 'Could not send right now. Please try again.');
+                btn.disabled = false;
+                btn.textContent = 'Request call';
+            }
         });
+
 
         // Auto-step
         (function autoStep() {
