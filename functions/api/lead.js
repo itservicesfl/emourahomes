@@ -37,6 +37,7 @@ export async function onRequestPost(context) {
         const id = crypto.randomUUID();
         const createdAt = new Date().toISOString();
 
+        // 1) Always insert lead first
         const stmt = DB.prepare(`
       INSERT INTO leads (
         id, created_at,
@@ -72,71 +73,70 @@ export async function onRequestPost(context) {
         );
 
         await stmt.run();
-        // Email notification (do NOT block saving the lead if email fails)
+
+        // 2) Try email notification (never block success if email fails)
+        let emailSent = 0;
+        let emailError = null;
+
         try {
             const apiKey = context.env.RESEND_API_KEY;
             const to = context.env.LEADS_NOTIFY_TO;
             const from = context.env.LEADS_NOTIFY_FROM;
 
-            if (apiKey && to && from) {
-                const addr = body?.address || "(no address)";
-                const choice = leadChoice === "email_report" ? "Email report" : "Specialist call";
+            if (!apiKey) throw new Error("Missing RESEND_API_KEY");
+            if (!to) throw new Error("Missing LEADS_NOTIFY_TO");
+            if (!from) throw new Error("Missing LEADS_NOTIFY_FROM");
 
-                const estVal = estimate?.value ? `$${Number(estimate.value).toLocaleString("en-US")}` : "N/A";
-                const estLow = estimate?.low ? `$${Number(estimate.low).toLocaleString("en-US")}` : "N/A";
-                const estHigh = estimate?.high ? `$${Number(estimate.high).toLocaleString("en-US")}` : "N/A";
+            const estVal = estimate?.value
+                ? `$${Number(estimate.value).toLocaleString("en-US")}`
+                : "N/A";
+            const estLow = estimate?.low
+                ? `$${Number(estimate.low).toLocaleString("en-US")}`
+                : "N/A";
+            const estHigh = estimate?.high
+                ? `$${Number(estimate.high).toLocaleString("en-US")}`
+                : "N/A";
 
-                const subject = `New EMoura Home Value lead — ${choice}`;
-                const text =
-                    `New lead received
+            const subject = `New EMoura Home Value lead — ${leadChoice}`;
+            const text =
+                `New lead received
 
 Name: ${name}
-Choice: ${choice}
+Choice: ${leadChoice}
 Email: ${email || ""}
 Phone: ${phone || ""}
 Best time: ${bestTime || ""}
 
-Address: ${addr}
+Address: ${body?.address || ""}
 Type: ${body?.ptype || ""}
 Sqft: ${body?.sqft || ""}
 Beds/Baths: ${body?.beds || ""} / ${body?.baths || ""}
-Garage: ${body?.garageSpots ?? ""}
-HOA: ${body?.hoa || ""} ${body?.hoaAmount ? `($${body.hoaAmount}/mo)` : ""}
 
 Estimate: ${estVal} (range ${estLow}–${estHigh})
 Lead ID: ${id}
 Created: ${createdAt}
 `;
 
-                const html = `
-      <h2>New lead received</h2>
-      <p><b>Name:</b> ${escapeHtml(name)}<br/>
-      <b>Choice:</b> ${escapeHtml(choice)}<br/>
-      <b>Email:</b> ${escapeHtml(email || "")}<br/>
-      <b>Phone:</b> ${escapeHtml(phone || "")}<br/>
-      <b>Best time:</b> ${escapeHtml(bestTime || "")}</p>
-
-      <p><b>Address:</b> ${escapeHtml(addr)}<br/>
-      <b>Type:</b> ${escapeHtml(body?.ptype || "")}<br/>
-      <b>Sqft:</b> ${escapeHtml(String(body?.sqft || ""))}<br/>
-      <b>Beds/Baths:</b> ${escapeHtml(String(body?.beds || ""))} / ${escapeHtml(String(body?.baths || ""))}<br/>
-      <b>Garage:</b> ${escapeHtml(String(body?.garageSpots ?? ""))}<br/>
-      <b>HOA:</b> ${escapeHtml(String(body?.hoa || ""))} ${body?.hoaAmount ? `($${Number(body.hoaAmount).toLocaleString("en-US")}/mo)` : ""}</p>
-
-      <p><b>Estimate:</b> ${escapeHtml(estVal)} (range ${escapeHtml(estLow)}–${escapeHtml(estHigh)})</p>
-      <p><b>Lead ID:</b> ${escapeHtml(id)}<br/>
-      <b>Created:</b> ${escapeHtml(createdAt)}</p>
-    `;
-
-                await sendLeadEmail({ apiKey, to, from, subject, text, html });
-            }
+            await sendLeadEmail({ apiKey, to, from, subject, text });
+            emailSent = 1;
         } catch (e) {
-            // Don’t fail the request — lead is already saved.
-            // Optional: console.log(e) (but avoid logging PII)
+            emailError = String(e?.message || e).slice(0, 500);
         }
 
+        // 3) Store email status IF the columns exist; otherwise ignore safely
+        // IMPORTANT: This will fail if you didn't add email_sent/email_error columns
+        try {
+            await DB.prepare(`UPDATE leads SET email_sent=?, email_error=? WHERE id=?`)
+                .bind(emailSent, emailError, id)
+                .run();
+        } catch (_) {
+            // Table doesn't have these columns yet — do not break lead capture.
+            // (You can add them later with ALTER TABLE.)
+        }
 
-        return json({ ok: true, id }, 200);
+        // Always return OK; optionally include email status for debugging
+        return json({ ok: true, id, emailSent }, 200);
+
     } catch (e) {
         return json({ error: "Bad request", detail: String(e?.message || e) }, 400);
     }
@@ -155,14 +155,16 @@ function toNum(v) {
     return n;
 }
 
-async function sendLeadEmail({ apiKey, to, from, subject, text, html }) {
+async function sendLeadEmail({ apiKey, to, from, subject, text }) {
+    const payload = { from, to, subject, text };
+
     const resp = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
-            "Authorization": `Bearer ${apiKey}`,
+            Authorization: `Bearer ${apiKey}`,
             "content-type": "application/json"
         },
-        body: JSON.stringify({ from, to, subject, text, html })
+        body: JSON.stringify(payload)
     });
 
     if (!resp.ok) {
@@ -170,17 +172,6 @@ async function sendLeadEmail({ apiKey, to, from, subject, text, html }) {
         throw new Error(`Resend failed: ${resp.status} ${detail.slice(0, 300)}`);
     }
 }
-
-function escapeHtml(s) {
-    return String(s)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#39;");
-}
-
-
 
 function json(data, status = 200) {
     return new Response(JSON.stringify(data), {
