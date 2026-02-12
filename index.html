@@ -724,33 +724,14 @@
         });
 
         // Mock estimate logic (temporary)
-        function computeMockEstimate(d) {
-            let basePPSF = 240;
-            if (d.ptype && String(d.ptype).toLowerCase().includes('condo')) basePPSF = 260;
-
-            let val = (Number(d.sqft || 0) * basePPSF);
-            if (d.features?.pool) val *= 1.05;
-            if (d.features?.balcony) val *= 1.02;
-            if (d.features?.kitchen) val *= 1.03;
-            if (d.garageSpots === 1) val *= 1.01;
-            if (d.garageSpots === 2) val *= 1.02;
-            if (d.garageSpots === 3) val *= 1.03;
-
-            if (d.hoa === 'yes' && d.hoaAmount) {
-                const hoa = Number(d.hoaAmount);
-                if (hoa > 1200) val *= 0.97;
-                else if (hoa > 700) val *= 0.985;
-            }
-
-            const low = val * 0.92;
-            const high = val * 1.08;
-            return { val, low, high };
-        }
+        
 
         // Processing animation
-        let timer = null;
-        function startProcessing() {
-            if (timer) clearInterval(timer);
+        let processingRunning = false;
+
+        async function startProcessing() {
+            if (processingRunning) return;
+            processingRunning = true;
 
             const barFill = $('barFill');
             const statusLine = $('statusLine');
@@ -769,32 +750,57 @@
             statusLine.textContent = messages[0];
             barFill.style.width = '0%';
 
-            timer = setInterval(() => {
+            while (pct < 100) {
+                await wait(250);
                 pct += 4;
                 if (pct > 100) pct = 100;
+
                 barFill.style.width = pct + '%';
 
                 if (pct % 16 === 0 && msgIndex < messages.length - 1) {
                     msgIndex++;
                     statusLine.textContent = messages[msgIndex];
                 }
+            }
 
-                if (pct >= 100) {
-                    clearInterval(timer);
-                    timer = null;
+            try {
+                const d = getDraft();
 
-                    const d = getDraft();
-                    const est = computeMockEstimate(d);
-                    const format = (n) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+                const resp = await fetch('/api/estimate', {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({
+                        address: d.address,
+                        ptype: d.ptype,
+                        sqft: d.sqft,
+                        beds: d.beds,
+                        baths: d.baths,
+                        features: d.features,
+                        garageSpots: d.garageSpots,
+                        hoa: d.hoa,
+                        hoaAmount: d.hoaAmount
+                    })
+                });
 
-                    $('estimateValue').textContent = format(est.val);
-                    $('estimateRange').textContent = `Estimated range: ${format(est.low)} – ${format(est.high)}`;
+                const est = await resp.json();
+                if (!resp.ok) throw new Error(est?.error || 'Estimate failed');
 
-                    setDraft({ estimate: { value: est.val, low: est.low, high: est.high, isMock: true } });
-                    goStep(4);
-                }
-            }, 250);
+                const format = (n) => Number(n).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+
+                $('estimateValue').textContent = format(est.value);
+                $('estimateRange').textContent = `Estimated range: ${format(est.low)} – ${format(est.high)}`;
+
+                setDraft({ estimate: { value: est.value, low: est.low, high: est.high, mode: est.mode, isMock: false } });
+                goStep(4);
+            } catch (e) {
+                statusLine.textContent = 'We could not generate an estimate right now. Please go back and try again.';
+            } finally {
+                processingRunning = false;
+            }
         }
+
+        function wait(ms) { return new Promise(res => setTimeout(res, ms)); }
+
 
         // CTA Forms (temporary)
         function clearCtaMessages() {
