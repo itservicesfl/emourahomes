@@ -2,75 +2,95 @@ export async function onRequestPost(context) {
     try {
         const body = await context.request.json();
 
-        // We’ll store Formspree URL in an environment variable
-        const FORMSPREE_ENDPOINT = context.env.FORMSPREE_ENDPOINT;
-        if (!FORMSPREE_ENDPOINT) {
-            return json({ error: "Missing FORMSPREE_ENDPOINT env var" }, 500);
-        }
+        // Must have D1 binding named DB
+        const DB = context.env.DB;
+        if (!DB) return json({ error: "Missing D1 binding DB" }, 500);
 
-        // Minimal lead validation
-        const choice = String(body?.leadChoice || "");
+        // Validate lead
+        const leadChoice = String(body?.leadChoice || "");
         const lead = body?.lead || {};
         const name = String(lead?.name || "").trim();
 
         if (!name) return json({ error: "Missing name" }, 400);
+        if (leadChoice !== "email_report" && leadChoice !== "specialist_call") {
+            return json({ error: "Invalid leadChoice" }, 400);
+        }
 
-        if (choice === "email_report") {
-            const email = String(lead?.email || "").trim();
+        let email = null, phone = null, bestTime = null;
+
+        if (leadChoice === "email_report") {
+            email = String(lead?.email || "").trim();
             if (!email || !email.includes("@")) return json({ error: "Invalid email" }, 400);
         }
 
-        if (choice === "specialist_call") {
-            const phone = String(lead?.phone || "").trim();
-            const best = String(lead?.best || "").trim();
+        if (leadChoice === "specialist_call") {
+            phone = String(lead?.phone || "").trim();
+            bestTime = String(lead?.best || "").trim();
             if (!phone || phone.length < 7) return json({ error: "Invalid phone" }, 400);
-            if (!best) return json({ error: "Missing best time" }, 400);
+            if (!bestTime) return json({ error: "Missing best time" }, 400);
         }
 
-        // Forward payload to Formspree
-        // This is what you’ll receive in Formspree submissions.
-        const forwardPayload = {
-            source: "emourahomevalue.com",
-            createdAt: new Date().toISOString(),
+        // Property + estimate
+        const featuresJson = JSON.stringify(body?.features || {});
+        const estimate = body?.estimate || {};
 
-            // lead info
-            leadChoice: body.leadChoice,
-            lead: body.lead,
+        const id = crypto.randomUUID();
+        const createdAt = new Date().toISOString();
 
-            // property info
-            property: {
-                address: body.address,
-                ptype: body.ptype,
-                sqft: body.sqft,
-                beds: body.beds,
-                baths: body.baths,
-                features: body.features,
-                garageSpots: body.garageSpots,
-                hoa: body.hoa,
-                hoaAmount: body.hoaAmount
-            },
+        const stmt = DB.prepare(`
+      INSERT INTO leads (
+        id, created_at,
+        lead_choice, name, email, phone, best_time,
+        address, ptype, sqft, beds, baths, features_json, garage_spots, hoa, hoa_amount,
+        estimate_value, estimate_low, estimate_high, estimate_mode,
+        user_agent, ip_country
+      ) VALUES (
+        ?, ?,
+        ?, ?, ?, ?, ?,
+        ?, ?, ?, ?, ?, ?, ?, ?, ?,
+        ?, ?, ?, ?,
+        ?, ?
+      )
+    `).bind(
+            id, createdAt,
+            leadChoice, name, email, phone, bestTime,
+            body?.address || null,
+            body?.ptype || null,
+            toInt(body?.sqft),
+            toNum(body?.beds),
+            toNum(body?.baths),
+            featuresJson,
+            toInt(body?.garageSpots),
+            body?.hoa || null,
+            toInt(body?.hoaAmount),
+            toInt(estimate?.value),
+            toInt(estimate?.low),
+            toInt(estimate?.high),
+            estimate?.mode || null,
+            context.request.headers.get("user-agent") || null,
+            context.request.cf?.country || null
+        );
 
-            // estimate
-            estimate: body.estimate
-        };
+        await stmt.run();
 
-        const resp = await fetch(FORMSPREE_ENDPOINT, {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify(forwardPayload)
-        });
-
-        if (!resp.ok) {
-            const txt = await resp.text().catch(() => "");
-            return json({ error: "Formspree rejected", status: resp.status, detail: txt.slice(0, 300) }, 502);
-        }
-
-        return json({ ok: true }, 200);
+        return json({ ok: true, id }, 200);
     } catch (e) {
         return json({ error: "Bad request", detail: String(e?.message || e) }, 400);
     }
 }
 
+function toInt(v) {
+    if (v === null || v === undefined || v === "") return null;
+    const n = Number(v);
+    if (Number.isNaN(n)) return null;
+    return Math.round(n);
+}
+function toNum(v) {
+    if (v === null || v === undefined || v === "") return null;
+    const n = Number(v);
+    if (Number.isNaN(n)) return null;
+    return n;
+}
 function json(data, status = 200) {
     return new Response(JSON.stringify(data), {
         status,
