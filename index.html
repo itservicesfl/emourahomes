@@ -7,16 +7,21 @@
     <meta name="description" content="Get a fast home value estimate. Enter your address and a few details to receive an instant estimate and a full report option." />
     <style>
         :root {
-            --bg: #0b0f19;
-            --card: rgba(255,255,255,0.06);
-            --border: rgba(255,255,255,0.12);
-            --text: rgba(255,255,255,0.90);
-            --muted: rgba(255,255,255,0.70);
-            --muted2: rgba(255,255,255,0.55);
-            --brand: #4f7cff;
-            --danger: #ff5a6a;
-            --ok: #2bd576;
+            /* Light theme (more conventional) */
+            --page: #f5f7fb;
+            --card: #ffffff;
+            --border: #e7eaf2;
+            --text: #111827;
+            --muted: #4b5563;
+            --muted2: #6b7280;
+            /* Brand */
+            --brand: #2563eb;
+            --brand2: #1d4ed8;
+            /* Status */
+            --danger: #dc2626;
+            --ok: #16a34a;
             --radius: 18px;
+            --shadow: 0 12px 30px rgba(17, 24, 39, 0.08);
         }
 
         * {
@@ -24,21 +29,59 @@
         }
 
         body {
-            font-family: Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text);
             margin: 0;
+            font-family: Arial, sans-serif;
+            background: var(--page);
+            color: var(--text);
         }
 
         .wrap {
-            max-width: 980px;
+            max-width: 1020px;
             margin: 0 auto;
-            padding: 54px 18px;
+            padding: 42px 18px 60px;
         }
+
+        /* Header branding */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text);
+        }
+
+            .brand img {
+                height: 44px;
+                width: auto;
+                display: block;
+            }
+
+            .brand .brandText {
+                display: flex;
+                flex-direction: column;
+                line-height: 1.15;
+            }
+
+                .brand .brandText strong {
+                    font-size: 14px;
+                }
+
+                .brand .brandText span {
+                    font-size: 12px;
+                    color: var(--muted2);
+                }
 
         .grid {
             display: grid;
-            grid-template-columns: 1.2fr 0.8fr;
+            grid-template-columns: 1.25fr 0.75fr;
             gap: 18px;
             align-items: start;
         }
@@ -53,17 +96,19 @@
             background: var(--card);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 26px;
+            padding: 24px;
+            box-shadow: var(--shadow);
         }
 
         h1 {
-            margin: 0 0 10px;
-            font-size: 34px;
+            margin: 0 0 8px;
+            font-size: 30px;
+            letter-spacing: -0.2px;
         }
 
         p {
-            margin: 0 0 18px;
-            line-height: 1.55;
+            margin: 0 0 16px;
+            line-height: 1.6;
             color: var(--muted);
         }
 
@@ -72,23 +117,27 @@
             color: var(--muted2);
         }
 
+        /* Progress dots */
         .stepbar {
             display: flex;
             gap: 8px;
-            margin: 0 0 18px;
+            margin: 0 0 16px;
         }
 
         .dot {
             height: 8px;
             flex: 1;
             border-radius: 999px;
-            background: rgba(255,255,255,0.14);
+            background: #eef2ff;
+            border: 1px solid #e5e7eb;
         }
 
             .dot.on {
-                background: var(--brand);
+                background: #c7d2fe;
+                border-color: #c7d2fe;
             }
 
+        /* Inputs */
         label {
             display: block;
             font-size: 13px;
@@ -100,19 +149,30 @@
             width: 100%;
             padding: 12px 12px;
             border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.16);
-            background: rgba(0,0,0,0.25);
+            border: 1px solid #d7dbea;
+            background: #ffffff;
             color: var(--text);
             outline: none;
         }
 
-        textarea {
-            min-height: 90px;
-            resize: vertical;
+            input::placeholder, textarea::placeholder {
+                color: #9ca3af;
+            }
+
+            input:focus, select:focus, textarea:focus {
+                border-color: rgba(37,99,235,0.55);
+                box-shadow: 0 0 0 4px rgba(37,99,235,0.12);
+            }
+
+        /* IMPORTANT: Dropdown readability on all browsers */
+        select {
+            color: var(--text);
+            background-color: #ffffff;
         }
 
-        input::placeholder {
-            color: rgba(255,255,255,0.40);
+        option {
+            color: #111827;
+            background: #ffffff;
         }
 
         .row {
@@ -126,6 +186,7 @@
             min-width: 220px;
         }
 
+        /* Buttons */
         .btnrow {
             display: flex;
             gap: 12px;
@@ -144,12 +205,27 @@
             font-weight: 800;
             border: 0;
             cursor: pointer;
+            transition: transform 0.04s ease, background 0.15s ease;
         }
+
+            .btn:hover {
+                background: var(--brand2);
+            }
+
+            .btn:active {
+                transform: translateY(1px);
+            }
 
             .btn.secondary {
                 background: transparent;
-                border: 1px solid rgba(255,255,255,0.18);
+                border: 1px solid #d7dbea;
+                color: var(--text);
+                font-weight: 800;
             }
+
+                .btn.secondary:hover {
+                    background: #f3f4f6;
+                }
 
         .error {
             margin-top: 10px;
@@ -174,7 +250,7 @@
             margin: 0;
             padding-left: 18px;
             color: var(--muted);
-            line-height: 1.55;
+            line-height: 1.6;
         }
 
         .side li {
@@ -186,8 +262,9 @@
             font-size: 12px;
             padding: 6px 10px;
             border-radius: 999px;
-            border: 1px solid rgba(255,255,255,0.18);
+            border: 1px solid #d7dbea;
             color: var(--muted);
+            background: #f8fafc;
             margin-bottom: 10px;
         }
 
@@ -197,10 +274,11 @@
 
         .divider {
             height: 1px;
-            background: rgba(255,255,255,0.12);
+            background: var(--border);
             margin: 16px 0;
         }
 
+        /* Feature chips */
         .chiprow {
             display: flex;
             gap: 10px;
@@ -213,9 +291,9 @@
             gap: 8px;
             align-items: center;
             padding: 10px 12px;
-            border: 1px solid rgba(255,255,255,0.16);
+            border: 1px solid #d7dbea;
             border-radius: 999px;
-            background: rgba(0,0,0,0.18);
+            background: #f8fafc;
             cursor: pointer;
             user-select: none;
         }
@@ -224,18 +302,22 @@
                 width: auto;
             }
 
-        /* Progress */
-        .progressWrap {
+        /* Processing */
+        .valueBox {
             margin-top: 10px;
+            padding: 18px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            background: #f8fafc;
         }
 
         .bar {
             width: 100%;
             height: 12px;
             border-radius: 999px;
-            background: rgba(255,255,255,0.12);
+            background: #e5e7eb;
             overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.12);
+            border: 1px solid #e5e7eb;
         }
 
             .bar > div {
@@ -251,18 +333,10 @@
         }
 
         /* Result */
-        .valueBox {
-            margin-top: 10px;
-            padding: 18px;
-            border-radius: 16px;
-            border: 1px solid rgba(255,255,255,0.14);
-            background: rgba(0,0,0,0.20);
-        }
-
         .valueBig {
             font-size: 38px;
             font-weight: 900;
-            letter-spacing: 0.2px;
+            letter-spacing: -0.3px;
             margin: 6px 0 0;
         }
 
@@ -270,10 +344,35 @@
             color: var(--muted);
             margin: 6px 0 0;
         }
+
+        .urlLink {
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+            color: var(--brand);
+            text-decoration: none;
+            font-weight: 800;
+        }
+
+            .urlLink:hover {
+                text-decoration: underline;
+            }
     </style>
 </head>
 <body>
     <div class="wrap">
+
+        <!-- Branding header (logo + trust line) -->
+        <div class="topbar">
+            <a class="brand" href="#" onclick="return false;">
+                <img src="assets/logo.png" alt="EMoura Home Value Logo" />
+                <div class="brandText">
+                    <strong>EMoura Home Value</strong>
+                    <span>Nationwide USA • Fast estimate</span>
+                </div>
+            </a>
+            <div class="muted">Secure lead form • No spam</div>
+        </div>
+
         <div class="grid">
             <div class="card">
                 <div class="stepbar" aria-label="Progress">
@@ -283,7 +382,7 @@
                     <div class="dot" id="dot4"></div>
                 </div>
 
-                <h1 id="title">Get your home value estimate</h1>
+                <h1>Get your home value estimate</h1>
                 <p id="subtitle">Start by entering the property address. Then we’ll ask a few quick details and generate an estimate.</p>
 
                 <!-- STEP 1 -->
@@ -310,8 +409,7 @@
 
                     <div class="btnrow">
                         <button class="btn" type="submit">Continue</button>
-                        <a class="btn secondary" href="https://www.emourahomes.com" target="_blank" rel="noreferrer">Visit EMouraHomes.com</a>
-                        <span class="muted">Nationwide USA</span>
+                        <span class="muted">Step 1 of 4</span>
                     </div>
 
                     <div class="error" id="err1"></div>
@@ -388,7 +486,7 @@
                         <div class="muted">Processing</div>
                         <div style="font-size:20px;font-weight:900;margin-top:6px;">We’re evaluating your property…</div>
 
-                        <div class="progressWrap">
+                        <div style="margin-top:12px;">
                             <div class="bar"><div id="barFill"></div></div>
                             <div class="status" id="statusLine">Starting analysis…</div>
                         </div>
@@ -400,7 +498,7 @@
                     </div>
                 </div>
 
-                <!-- STEP 4: RESULT + CTAs -->
+                <!-- STEP 4: RESULT + CTAs (FINAL) -->
                 <div id="step4" class="hidden">
                     <div class="valueBox">
                         <div class="muted">Evaluation Complete</div>
@@ -454,12 +552,14 @@
                     </div>
 
                     <div class="btnrow" style="margin-top:16px;">
-                        <a class="btn" id="finishLink" href="https://www.emourahomes.com">Continue to EMouraHomes.com</a>
+                        <a class="btn" id="finishLink" href="https://www.emourahomes.com">Continue to www.emourahomes.com</a>
                         <span class="muted">Step 4 of 4</span>
                     </div>
 
-                    <div class="muted" style="margin-top:14px;">
-                        Note: This estimate is based on your inputs and local market averages. Next step will connect this to our backend API.
+                    <!-- show url only on step 4 -->
+                    <div class="muted" style="margin-top:10px;">
+                        Main website:
+                        <a class="urlLink" href="https://www.emourahomes.com" target="_blank" rel="noreferrer">www.emourahomes.com</a>
                     </div>
                 </div>
 
@@ -469,16 +569,16 @@
             </div>
 
             <div class="card side">
-                <div class="badge" id="sideBadge">How it works</div>
-                <h3 id="sideTitle">Fast & simple</h3>
-                <ul id="sideList">
+                <div class="badge">How it works</div>
+                <h3>Fast & simple</h3>
+                <ul>
                     <li>Enter your address</li>
                     <li>Add property details (sqft, beds, baths, amenities)</li>
                     <li>We compare with similar properties nationwide</li>
                     <li>You get an estimate + option for full report</li>
                 </ul>
-                <div class="muted" style="margin-top:14px;" id="sideNote">
-                    Next: we’ll add a “processing” screen and then the results + lead capture.
+                <div class="muted" style="margin-top:14px;">
+                    Next: we’ll connect this flow to the backend API.
                 </div>
             </div>
         </div>
@@ -579,7 +679,7 @@
 
         // Back buttons
         $('backTo1').addEventListener('click', () => goStep(1));
-        $('backTo2').addEventListener('click', () => goStep(2));        
+        $('backTo2').addEventListener('click', () => goStep(2));
 
         // STEP 2 submit
         step2.addEventListener('submit', (e) => {
@@ -620,21 +720,15 @@
 
             setDraft({ sqft: sqftNum, beds: bedsNum, baths: bathsNum, features, garageSpots, hoa, hoaAmount });
             showOk(ok2, 'Saved. Generating estimate…');
-
-            // Go to Processing
             goStep(3);
         });
 
         // Mock estimate logic (temporary)
         function computeMockEstimate(d) {
-            // VERY rough placeholder so we can complete the flow.
-            // Next step we replace this with /api/estimate (Cloudflare Worker + KV).
-            let basePPSF = 240; // generic nationwide starter
+            let basePPSF = 240;
             if (d.ptype && String(d.ptype).toLowerCase().includes('condo')) basePPSF = 260;
 
             let val = (Number(d.sqft || 0) * basePPSF);
-
-            // Simple feature bumps
             if (d.features?.pool) val *= 1.05;
             if (d.features?.balcony) val *= 1.02;
             if (d.features?.kitchen) val *= 1.03;
@@ -642,7 +736,6 @@
             if (d.garageSpots === 2) val *= 1.02;
             if (d.garageSpots === 3) val *= 1.03;
 
-            // HOA slight adjustment (placeholder)
             if (d.hoa === 'yes' && d.hoaAmount) {
                 const hoa = Number(d.hoaAmount);
                 if (hoa > 1200) val *= 0.97;
@@ -664,8 +757,8 @@
 
             const messages = [
                 'Verifying the address…',
-                'Gathering local market averages…',
-                'Comparing properties like yours…',
+                'Gathering market averages…',
+                'Comparing similar properties…',
                 'Adjusting for size and features…',
                 'Analyzing HOA/condo costs…',
                 'Finalizing your estimate…'
@@ -677,7 +770,7 @@
             barFill.style.width = '0%';
 
             timer = setInterval(() => {
-                pct += 4; // ~6-7 seconds total
+                pct += 4;
                 if (pct > 100) pct = 100;
                 barFill.style.width = pct + '%';
 
@@ -703,7 +796,7 @@
             }, 250);
         }
 
-        // CTA Forms (temporary: show success and enable redirect)
+        // CTA Forms (temporary)
         function clearCtaMessages() {
             ['errEmail', 'okEmail', 'errCall', 'okCall'].forEach(id => { $(id).style.display = 'none'; $(id).textContent = ''; });
         }
@@ -721,7 +814,6 @@
             setDraft({ leadChoice: 'email_report', lead: { name, email } });
             showCtaOk('okEmail', 'Saved. Next step: we will send this to our backend (Formspree via Worker).');
 
-            // Optional auto-redirect after a short delay
             setTimeout(() => { window.location.href = 'https://www.emourahomes.com'; }, 1200);
         });
 
@@ -741,7 +833,7 @@
             setTimeout(() => { window.location.href = 'https://www.emourahomes.com'; }, 1200);
         });
 
-        // Auto-step: if step2 is complete, stay there; if estimate exists, show results
+        // Auto-step
         (function autoStep() {
             const d = getDraft();
             if (d.estimate && d.estimate.value) return goStep(4);
