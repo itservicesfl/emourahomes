@@ -801,6 +801,32 @@
 
         function wait(ms) { return new Promise(res => setTimeout(res, ms)); }
 
+        function clearCtaMessages() {
+            const ids = ['errEmail', 'okEmail', 'errCall', 'okCall'];
+            ids.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.style.display = 'none';
+                    el.textContent = '';
+                }
+            });
+        }
+
+        function showCtaError(id, msg) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+
+        function showCtaOk(id, msg) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+
+
 
         // CTA Forms (temporary)
         $('emailCta').addEventListener('submit', async (e) => {
