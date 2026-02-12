@@ -74,31 +74,90 @@ export async function onRequestPost(context) {
 
         await stmt.run();
 
-        // 2) Try email notification (never block success if email fails)
+        // 2) Try email notification + send report to the lead (never block success if email fails)
         let emailSent = 0;
         let emailError = null;
 
         try {
             const apiKey = context.env.RESEND_API_KEY;
-            const to = context.env.LEADS_NOTIFY_TO;
-            const from = context.env.LEADS_NOTIFY_FROM;
+            const adminTo = context.env.LEADS_NOTIFY_TO;       // your email
+            const from = context.env.LEADS_NOTIFY_FROM;        // verified sender
+            const siteUrl = context.env.PUBLIC_SITE_URL || "https://emourahomevalue.com";
 
             if (!apiKey) throw new Error("Missing RESEND_API_KEY");
-            if (!to) throw new Error("Missing LEADS_NOTIFY_TO");
+            if (!adminTo) throw new Error("Missing LEADS_NOTIFY_TO");
             if (!from) throw new Error("Missing LEADS_NOTIFY_FROM");
 
-            const estVal = estimate?.value
-                ? `$${Number(estimate.value).toLocaleString("en-US")}`
-                : "N/A";
-            const estLow = estimate?.low
-                ? `$${Number(estimate.low).toLocaleString("en-US")}`
-                : "N/A";
-            const estHigh = estimate?.high
-                ? `$${Number(estimate.high).toLocaleString("en-US")}`
-                : "N/A";
+            const addr = body?.address || "";
+            const ptype = body?.ptype || "";
+            const sqft = body?.sqft || "";
+            const beds = body?.beds || "";
+            const baths = body?.baths || "";
 
-            const subject = `New EMoura Home Value lead — ${leadChoice}`;
-            const text =
+            const estVal = estimate?.value ? `$${Number(estimate.value).toLocaleString("en-US")}` : "N/A";
+            const estLow = estimate?.low ? `$${Number(estimate.low).toLocaleString("en-US")}` : "N/A";
+            const estHigh = estimate?.high ? `$${Number(estimate.high).toLocaleString("en-US")}` : "N/A";
+
+            // Build a simple "report" body
+            const reportText =
+                `Your Home Value Report
+
+Address: ${addr}
+Property type: ${ptype}
+Sqft: ${sqft}
+Beds/Baths: ${beds} / ${baths}
+
+Estimated value: ${estVal}
+Estimated range: ${estLow} – ${estHigh}
+
+Next steps:
+- Schedule a call: ${siteUrl}
+- Visit our main website: https://www.emourahomes.com
+
+Disclaimer:
+This is an estimate based on information provided and market averages. A full comparative market analysis (CMA) may produce a different value.
+`;
+
+            const reportHtml = `
+    <h2>Your Home Value Report</h2>
+    <p>
+      <b>Address:</b> ${escapeHtml(addr)}<br/>
+      <b>Property type:</b> ${escapeHtml(ptype)}<br/>
+      <b>Sqft:</b> ${escapeHtml(String(sqft))}<br/>
+      <b>Beds/Baths:</b> ${escapeHtml(String(beds))} / ${escapeHtml(String(baths))}
+    </p>
+
+    <p>
+      <b>Estimated value:</b> ${escapeHtml(estVal)}<br/>
+      <b>Estimated range:</b> ${escapeHtml(estLow)} – ${escapeHtml(estHigh)}
+    </p>
+
+    <p>
+      <b>Next steps</b><br/>
+      • Visit our main website: <a href="https://www.emourahomes.com">www.emourahomes.com</a>
+    </p>
+
+    <p style="color:#6b7280;font-size:12px;">
+      <b>Disclaimer:</b> This is an estimate based on information provided and market averages.
+      A full comparative market analysis (CMA) may produce a different value.
+    </p>
+  `;
+
+            // Send the report to the LEAD (only if leadChoice is email_report)
+            if (leadChoice === "email_report" && email) {
+                await sendLeadEmail({
+                    apiKey,
+                    to: email,
+                    from,
+                    subject: `Your Home Value Report — ${addr || "Property"}`,
+                    text: reportText,
+                    html: reportHtml,
+                    replyTo: adminTo // optional: when they reply, it goes to you
+                });
+            }
+
+            // Send admin notification (always)
+            const adminText =
                 `New lead received
 
 Name: ${name}
@@ -107,21 +166,27 @@ Email: ${email || ""}
 Phone: ${phone || ""}
 Best time: ${bestTime || ""}
 
-Address: ${body?.address || ""}
-Type: ${body?.ptype || ""}
-Sqft: ${body?.sqft || ""}
-Beds/Baths: ${body?.beds || ""} / ${body?.baths || ""}
+--- Report Copy ---
+${reportText}
 
-Estimate: ${estVal} (range ${estLow}–${estHigh})
 Lead ID: ${id}
 Created: ${createdAt}
 `;
 
-            await sendLeadEmail({ apiKey, to, from, subject, text });
+            await sendLeadEmail({
+                apiKey,
+                to: adminTo,
+                from,
+                subject: `New lead — ${leadChoice} — ${addr || "No address"}`,
+                text: adminText,
+                html: `<pre style="font-family:ui-monospace,Menlo,monospace;white-space:pre-wrap;">${escapeHtml(adminText)}</pre>`
+            });
+
             emailSent = 1;
         } catch (e) {
             emailError = String(e?.message || e).slice(0, 500);
         }
+
 
         // 3) Store email status IF the columns exist; otherwise ignore safely
         // IMPORTANT: This will fail if you didn't add email_sent/email_error columns
@@ -155,8 +220,10 @@ function toNum(v) {
     return n;
 }
 
-async function sendLeadEmail({ apiKey, to, from, subject, text }) {
+async function sendLeadEmail({ apiKey, to, from, subject, text, html, replyTo }) {
     const payload = { from, to, subject, text };
+    if (html) payload.html = html;
+    if (replyTo) payload.reply_to = replyTo;
 
     const resp = await fetch("https://api.resend.com/emails", {
         method: "POST",
