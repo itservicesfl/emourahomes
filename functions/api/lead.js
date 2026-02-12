@@ -240,6 +240,7 @@ async function sendLeadEmail({ apiKey, to, from, subject, text, html, replyTo })
     }
 }
 
+
 function json(data, status = 200) {
     return new Response(JSON.stringify(data), {
         status,
