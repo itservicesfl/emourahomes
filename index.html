@@ -835,11 +835,10 @@
 
         // Auto-step
         (function autoStep() {
-            const d = getDraft();
-            if (d.estimate && d.estimate.value) return goStep(4);
-            if (d.address && d.ptype) return goStep(2);
+            // Always start a new session at Step 1
             goStep(1);
         })();
+
     </script>
 </body>
 </html>
