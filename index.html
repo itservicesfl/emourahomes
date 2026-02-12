@@ -185,6 +185,39 @@
             color: var(--muted);
             margin-bottom: 10px;
         }
+
+        .hidden {
+            display: none;
+        }
+
+        .divider {
+            height: 1px;
+            background: rgba(255,255,255,0.12);
+            margin: 16px 0;
+        }
+
+        .chiprow {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .chip {
+            display: inline-flex;
+            gap: 8px;
+            align-items: center;
+            padding: 10px 12px;
+            border: 1px solid rgba(255,255,255,0.16);
+            border-radius: 999px;
+            background: rgba(0,0,0,0.18);
+            cursor: pointer;
+            user-select: none;
+        }
+
+            .chip input {
+                width: auto;
+            }
     </style>
 </head>
 <body>
@@ -192,16 +225,17 @@
         <div class="grid">
             <div class="card">
                 <div class="stepbar" aria-label="Progress">
-                    <div class="dot on"></div>
-                    <div class="dot"></div>
-                    <div class="dot"></div>
-                    <div class="dot"></div>
-                    <div class="dot"></div>
+                    <div class="dot on" id="dot1"></div>
+                    <div class="dot" id="dot2"></div>
+                    <div class="dot" id="dot3"></div>
+                    <div class="dot" id="dot4"></div>
+                    <div class="dot" id="dot5"></div>
                 </div>
 
-                <h1>Get your home value estimate</h1>
-                <p>Start by entering the property address. Then we’ll ask a few quick details and generate an estimate.</p>
+                <h1 id="title">Get your home value estimate</h1>
+                <p id="subtitle">Start by entering the property address. Then we’ll ask a few quick details and generate an estimate.</p>
 
+                <!-- STEP 1 -->
                 <form id="step1">
                     <div class="row">
                         <div class="col">
@@ -229,8 +263,72 @@
                         <span class="muted">Nationwide USA</span>
                     </div>
 
-                    <div class="error" id="err"></div>
-                    <div class="ok" id="ok"></div>
+                    <div class="error" id="err1"></div>
+                    <div class="ok" id="ok1"></div>
+                </form>
+
+                <!-- STEP 2 -->
+                <form id="step2" class="hidden">
+                    <div class="row">
+                        <div class="col">
+                            <label for="sqft">Total living area (sqft)</label>
+                            <input id="sqft" name="sqft" inputmode="numeric" placeholder="e.g., 1850" />
+                        </div>
+                        <div class="col">
+                            <label for="beds">Bedrooms</label>
+                            <input id="beds" name="beds" inputmode="numeric" placeholder="e.g., 3" />
+                        </div>
+                        <div class="col">
+                            <label for="baths">Bathrooms</label>
+                            <input id="baths" name="baths" inputmode="decimal" placeholder="e.g., 2 or 2.5" />
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <label>Features</label>
+                    <div class="chiprow">
+                        <label class="chip"><input type="checkbox" id="balcony" /> Balcony / Patio</label>
+                        <label class="chip"><input type="checkbox" id="pool" /> Pool</label>
+                        <label class="chip"><input type="checkbox" id="kitchen" /> Updated Kitchen</label>
+                        <label class="chip"><input type="checkbox" id="living" /> Large Living Room</label>
+                    </div>
+
+                    <div class="row" style="margin-top:14px;">
+                        <div class="col">
+                            <label for="garageSpots">Garage / Parking spots</label>
+                            <select id="garageSpots">
+                                <option value="">Select…</option>
+                                <option value="0">0</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3+</option>
+                            </select>
+                        </div>
+
+                        <div class="col">
+                            <label for="hoa">Condo/HOA fee?</label>
+                            <select id="hoa">
+                                <option value="">Select…</option>
+                                <option value="no">No</option>
+                                <option value="yes">Yes</option>
+                            </select>
+                        </div>
+
+                        <div class="col" id="hoaAmountWrap" style="display:none;">
+                            <label for="hoaAmount">Monthly HOA/Condo fee (USD)</label>
+                            <input id="hoaAmount" inputmode="numeric" placeholder="e.g., 650" />
+                        </div>
+                    </div>
+
+                    <div class="btnrow">
+                        <button class="btn secondary" type="button" id="backTo1">Back</button>
+                        <button class="btn" type="submit">Continue</button>
+                        <span class="muted">Step 2 of 5</span>
+                    </div>
+
+                    <div class="error" id="err2"></div>
+                    <div class="ok" id="ok2"></div>
                 </form>
 
                 <div class="muted" style="margin-top:18px;">
@@ -239,51 +337,173 @@
             </div>
 
             <div class="card side">
-                <div class="badge">How it works</div>
-                <h3>Fast & simple</h3>
-                <ul>
+                <div class="badge" id="sideBadge">How it works</div>
+                <h3 id="sideTitle">Fast & simple</h3>
+                <ul id="sideList">
                     <li>Enter your address</li>
                     <li>Add property details (sqft, beds, baths, amenities)</li>
                     <li>We compare with similar properties nationwide</li>
                     <li>You get an estimate + option for full report</li>
                 </ul>
-                <div class="muted" style="margin-top:14px;">
-                    Next steps: we’ll add the details form and the “processing” screen with a progress bar.
+                <div class="muted" style="margin-top:14px;" id="sideNote">
+                    Next: we’ll add a “processing” screen and then the results + lead capture.
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        const form = document.getElementById('step1');
-        const err = document.getElementById('err');
-        const ok = document.getElementById('ok');
+        const $ = (id) => document.getElementById(id);
 
-        function showError(msg) {
-            ok.style.display = 'none';
-            err.textContent = msg;
-            err.style.display = 'block';
-        }
-        function showOk(msg) {
-            err.style.display = 'none';
-            ok.textContent = msg;
-            ok.style.display = 'block';
+        const step1 = $('step1');
+        const step2 = $('step2');
+
+        const err1 = $('err1');
+        const ok1 = $('ok1');
+        const err2 = $('err2');
+        const ok2 = $('ok2');
+
+        function setDots(activeStep) {
+            for (let i = 1; i <= 5; i++) {
+                const d = $('dot' + i);
+                if (!d) continue;
+                d.classList.toggle('on', i <= activeStep);
+            }
         }
 
-        form.addEventListener('submit', (e) => {
+        function showError(el, msg) {
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+        function hideError(el) { el.style.display = 'none'; el.textContent = ''; }
+        function showOk(el, msg) {
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+        function hideOk(el) { el.style.display = 'none'; el.textContent = ''; }
+
+        function getDraft() {
+            try { return JSON.parse(localStorage.getItem('emhv_lead_draft') || '{}'); }
+            catch { return {}; }
+        }
+        function setDraft(patch) {
+            const cur = getDraft();
+            const next = { ...cur, ...patch, updatedAt: new Date().toISOString() };
+            localStorage.setItem('emhv_lead_draft', JSON.stringify(next));
+            return next;
+        }
+
+        function goStep(n) {
+            if (n === 1) {
+                step1.classList.remove('hidden');
+                step2.classList.add('hidden');
+                $('subtitle').textContent = 'Start by entering the property address. Then we’ll ask a few quick details and generate an estimate.';
+                setDots(1);
+            }
+            if (n === 2) {
+                step1.classList.add('hidden');
+                step2.classList.remove('hidden');
+                $('subtitle').textContent = 'Add a few property details so the estimate is more accurate.';
+                setDots(2);
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Prefill from saved draft (nice UX)
+        (function prefill() {
+            const d = getDraft();
+            if (d.address) $('address').value = d.address;
+            if (d.ptype) $('ptype').value = d.ptype;
+            if (d.sqft) $('sqft').value = d.sqft;
+            if (d.beds) $('beds').value = d.beds;
+            if (d.baths) $('baths').value = d.baths;
+            if (d.features) {
+                $('balcony').checked = !!d.features.balcony;
+                $('pool').checked = !!d.features.pool;
+                $('kitchen').checked = !!d.features.kitchen;
+                $('living').checked = !!d.features.living;
+            }
+            if (typeof d.garageSpots !== 'undefined') $('garageSpots').value = String(d.garageSpots ?? '');
+            if (d.hoa) $('hoa').value = d.hoa;
+            if (d.hoa === 'yes') $('hoaAmountWrap').style.display = 'block';
+            if (d.hoaAmount) $('hoaAmount').value = d.hoaAmount;
+        })();
+
+        // STEP 1 submit
+        step1.addEventListener('submit', (e) => {
             e.preventDefault();
-            const address = document.getElementById('address').value.trim();
-            const ptype = document.getElementById('ptype').value.trim();
+            hideError(err1); hideOk(ok1);
 
-            if (!address || address.length < 6) return showError('Please enter a valid property address.');
-            if (!ptype) return showError('Please select a property type.');
+            const address = $('address').value.trim();
+            const ptype = $('ptype').value.trim();
 
-            const payload = { address, ptype, startedAt: new Date().toISOString() };
-            localStorage.setItem('emhv_lead_draft', JSON.stringify(payload));
+            if (!address || address.length < 6) return showError(err1, 'Please enter a valid property address.');
+            if (!ptype) return showError(err1, 'Please select a property type.');
 
-            showOk('Saved. Next step will ask for property details (sqft, beds, baths, etc).');
+            setDraft({ address, ptype, startedAt: getDraft().startedAt || new Date().toISOString() });
+            showOk(ok1, 'Saved. Continue to add property details.');
+            goStep(2);
+        });
+
+        // HOA show/hide amount
+        $('hoa').addEventListener('change', () => {
+            const v = $('hoa').value;
+            $('hoaAmountWrap').style.display = (v === 'yes') ? 'block' : 'none';
+            if (v !== 'yes') $('hoaAmount').value = '';
+        });
+
+        // Back button
+        $('backTo1').addEventListener('click', () => goStep(1));
+
+        // STEP 2 submit
+        step2.addEventListener('submit', (e) => {
+            e.preventDefault();
+            hideError(err2); hideOk(ok2);
+
+            const sqft = $('sqft').value.trim();
+            const beds = $('beds').value.trim();
+            const baths = $('baths').value.trim();
+
+            // Simple validations (MVP)
+            const sqftNum = Number(sqft);
+            if (!sqft || Number.isNaN(sqftNum) || sqftNum < 200) return showError(err2, 'Please enter a valid sqft (example: 1850).');
+
+            const bedsNum = Number(beds);
+            if (!beds || Number.isNaN(bedsNum) || bedsNum < 0 || bedsNum > 30) return showError(err2, 'Please enter valid bedrooms (example: 3).');
+
+            const bathsNum = Number(baths);
+            if (!baths || Number.isNaN(bathsNum) || bathsNum < 0 || bathsNum > 30) return showError(err2, 'Please enter valid bathrooms (example: 2 or 2.5).');
+
+            const features = {
+                balcony: $('balcony').checked,
+                pool: $('pool').checked,
+                kitchen: $('kitchen').checked,
+                living: $('living').checked
+            };
+
+            const garageSpots = $('garageSpots').value === '' ? null : Number($('garageSpots').value);
+            const hoa = $('hoa').value;
+            let hoaAmount = null;
+
+            if (!hoa) return showError(err2, 'Please select whether there is a Condo/HOA fee.');
+            if (hoa === 'yes') {
+                const amt = $('hoaAmount').value.trim();
+                const amtNum = Number(amt);
+                if (!amt || Number.isNaN(amtNum) || amtNum < 1) return showError(err2, 'Please enter a valid monthly HOA amount.');
+                hoaAmount = amtNum;
+            }
+
+            setDraft({ sqft: sqftNum, beds: bedsNum, baths: bathsNum, features, garageSpots, hoa, hoaAmount });
+            showOk(ok2, 'Saved. Next: we will add the “processing” screen and valuation.');
+            // Next step (Step 3/4) will be added next.
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
+
+        // Start user on Step 2 automatically if Step 1 already saved
+        (function autoStep() {
+            const d = getDraft();
+            if (d.address && d.ptype) setTimeout(() => goStep(2), 50);
+        })();
     </script>
 </body>
 </html>
