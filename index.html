@@ -96,7 +96,7 @@
             margin: 0 0 6px;
         }
 
-        input, select {
+        input, select, textarea {
             width: 100%;
             padding: 12px 12px;
             border-radius: 12px;
@@ -106,9 +106,14 @@
             outline: none;
         }
 
-            input::placeholder {
-                color: rgba(255,255,255,0.40);
-            }
+        textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        input::placeholder {
+            color: rgba(255,255,255,0.40);
+        }
 
         .row {
             display: flex;
@@ -218,6 +223,53 @@
             .chip input {
                 width: auto;
             }
+
+        /* Progress */
+        .progressWrap {
+            margin-top: 10px;
+        }
+
+        .bar {
+            width: 100%;
+            height: 12px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.12);
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.12);
+        }
+
+            .bar > div {
+                height: 100%;
+                width: 0%;
+                background: var(--brand);
+                transition: width 250ms ease;
+            }
+
+        .status {
+            margin-top: 10px;
+            color: var(--muted);
+        }
+
+        /* Result */
+        .valueBox {
+            margin-top: 10px;
+            padding: 18px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.14);
+            background: rgba(0,0,0,0.20);
+        }
+
+        .valueBig {
+            font-size: 38px;
+            font-weight: 900;
+            letter-spacing: 0.2px;
+            margin: 6px 0 0;
+        }
+
+        .valueSmall {
+            color: var(--muted);
+            margin: 6px 0 0;
+        }
     </style>
 </head>
 <body>
@@ -229,7 +281,6 @@
                     <div class="dot" id="dot2"></div>
                     <div class="dot" id="dot3"></div>
                     <div class="dot" id="dot4"></div>
-                    <div class="dot" id="dot5"></div>
                 </div>
 
                 <h1 id="title">Get your home value estimate</h1>
@@ -324,12 +375,93 @@
                     <div class="btnrow">
                         <button class="btn secondary" type="button" id="backTo1">Back</button>
                         <button class="btn" type="submit">Continue</button>
-                        <span class="muted">Step 2 of 5</span>
+                        <span class="muted">Step 2 of 4</span>
                     </div>
 
                     <div class="error" id="err2"></div>
                     <div class="ok" id="ok2"></div>
                 </form>
+
+                <!-- STEP 3: PROCESSING -->
+                <div id="step3" class="hidden">
+                    <div class="valueBox">
+                        <div class="muted">Processing</div>
+                        <div style="font-size:20px;font-weight:900;margin-top:6px;">We’re evaluating your property…</div>
+
+                        <div class="progressWrap">
+                            <div class="bar"><div id="barFill"></div></div>
+                            <div class="status" id="statusLine">Starting analysis…</div>
+                        </div>
+
+                        <div class="btnrow" style="margin-top:18px;">
+                            <button class="btn secondary" id="backTo2" type="button">Back</button>
+                            <span class="muted">Step 3 of 4</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 4: RESULT + CTAs -->
+                <div id="step4" class="hidden">
+                    <div class="valueBox">
+                        <div class="muted">Evaluation Complete</div>
+                        <div style="font-size:20px;font-weight:900;margin-top:6px;">Your Home Worth is</div>
+                        <div class="valueBig" id="estimateValue">$—</div>
+                        <div class="valueSmall" id="estimateRange">Estimated range: —</div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div class="row">
+                        <div class="col">
+                            <h3 style="margin:0 0 10px;">Email me the full report</h3>
+                            <form id="emailCta">
+                                <label for="name1">Full name</label>
+                                <input id="name1" placeholder="Your name" />
+                                <div style="height:10px;"></div>
+                                <label for="email1">Email</label>
+                                <input id="email1" type="email" placeholder="you@email.com" />
+                                <div class="btnrow">
+                                    <button class="btn" type="submit">Send report</button>
+                                </div>
+                                <div class="error" id="errEmail"></div>
+                                <div class="ok" id="okEmail"></div>
+                            </form>
+                        </div>
+
+                        <div class="col">
+                            <h3 style="margin:0 0 10px;">Talk to a specialist</h3>
+                            <form id="callCta">
+                                <label for="name2">Full name</label>
+                                <input id="name2" placeholder="Your name" />
+                                <div style="height:10px;"></div>
+                                <label for="phone2">Phone</label>
+                                <input id="phone2" placeholder="(555) 555-5555" />
+                                <div style="height:10px;"></div>
+                                <label for="best2">Best time to call</label>
+                                <select id="best2">
+                                    <option value="">Select…</option>
+                                    <option>Morning</option>
+                                    <option>Afternoon</option>
+                                    <option>Evening</option>
+                                </select>
+                                <div class="btnrow">
+                                    <button class="btn" type="submit">Request call</button>
+                                </div>
+                                <div class="error" id="errCall"></div>
+                                <div class="ok" id="okCall"></div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="btnrow" style="margin-top:16px;">
+                        <a class="btn" id="finishLink" href="https://www.emourahomes.com">Continue to EMouraHomes.com</a>
+                        <span class="muted">Step 4 of 4</span>
+                    </div>
+
+                    <div class="muted" style="margin-top:14px;">
+                        Note: This estimate is based on your inputs and local market averages. Next step will connect this to our backend API.
+                    </div>
+                </div>
 
                 <div class="muted" style="margin-top:18px;">
                     By continuing, you agree that this is an estimate based on information provided and local market averages.
@@ -357,6 +489,8 @@
 
         const step1 = $('step1');
         const step2 = $('step2');
+        const step3 = $('step3');
+        const step4 = $('step4');
 
         const err1 = $('err1');
         const ok1 = $('ok1');
@@ -364,22 +498,16 @@
         const ok2 = $('ok2');
 
         function setDots(activeStep) {
-            for (let i = 1; i <= 5; i++) {
+            for (let i = 1; i <= 4; i++) {
                 const d = $('dot' + i);
                 if (!d) continue;
                 d.classList.toggle('on', i <= activeStep);
             }
         }
 
-        function showError(el, msg) {
-            el.textContent = msg;
-            el.style.display = 'block';
-        }
+        function showError(el, msg) { el.textContent = msg; el.style.display = 'block'; }
         function hideError(el) { el.style.display = 'none'; el.textContent = ''; }
-        function showOk(el, msg) {
-            el.textContent = msg;
-            el.style.display = 'block';
-        }
+        function showOk(el, msg) { el.textContent = msg; el.style.display = 'block'; }
         function hideOk(el) { el.style.display = 'none'; el.textContent = ''; }
 
         function getDraft() {
@@ -393,23 +521,20 @@
             return next;
         }
 
-        function goStep(n) {
-            if (n === 1) {
-                step1.classList.remove('hidden');
-                step2.classList.add('hidden');
-                $('subtitle').textContent = 'Start by entering the property address. Then we’ll ask a few quick details and generate an estimate.';
-                setDots(1);
-            }
-            if (n === 2) {
-                step1.classList.add('hidden');
-                step2.classList.remove('hidden');
-                $('subtitle').textContent = 'Add a few property details so the estimate is more accurate.';
-                setDots(2);
-            }
+        function showOnly(which) {
+            [step1, step2, step3, step4].forEach(el => el.classList.add('hidden'));
+            which.classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Prefill from saved draft (nice UX)
+        function goStep(n) {
+            if (n === 1) { setDots(1); $('subtitle').textContent = 'Start by entering the property address. Then we’ll ask a few quick details and generate an estimate.'; showOnly(step1); }
+            if (n === 2) { setDots(2); $('subtitle').textContent = 'Add a few property details so the estimate is more accurate.'; showOnly(step2); }
+            if (n === 3) { setDots(3); $('subtitle').textContent = 'We are evaluating properties like yours in the area.'; showOnly(step3); startProcessing(); }
+            if (n === 4) { setDots(4); $('subtitle').textContent = 'Your estimate is ready. Choose how you want the full evaluation.'; showOnly(step4); }
+        }
+
+        // Prefill from draft
         (function prefill() {
             const d = getDraft();
             if (d.address) $('address').value = d.address;
@@ -423,7 +548,7 @@
                 $('kitchen').checked = !!d.features.kitchen;
                 $('living').checked = !!d.features.living;
             }
-            if (typeof d.garageSpots !== 'undefined') $('garageSpots').value = String(d.garageSpots ?? '');
+            if (typeof d.garageSpots !== 'undefined' && d.garageSpots !== null) $('garageSpots').value = String(d.garageSpots);
             if (d.hoa) $('hoa').value = d.hoa;
             if (d.hoa === 'yes') $('hoaAmountWrap').style.display = 'block';
             if (d.hoaAmount) $('hoaAmount').value = d.hoaAmount;
@@ -452,8 +577,9 @@
             if (v !== 'yes') $('hoaAmount').value = '';
         });
 
-        // Back button
+        // Back buttons
         $('backTo1').addEventListener('click', () => goStep(1));
+        $('backTo2').addEventListener('click', () => goStep(2));        
 
         // STEP 2 submit
         step2.addEventListener('submit', (e) => {
@@ -464,7 +590,6 @@
             const beds = $('beds').value.trim();
             const baths = $('baths').value.trim();
 
-            // Simple validations (MVP)
             const sqftNum = Number(sqft);
             if (!sqft || Number.isNaN(sqftNum) || sqftNum < 200) return showError(err2, 'Please enter a valid sqft (example: 1850).');
 
@@ -494,15 +619,134 @@
             }
 
             setDraft({ sqft: sqftNum, beds: bedsNum, baths: bathsNum, features, garageSpots, hoa, hoaAmount });
-            showOk(ok2, 'Saved. Next: we will add the “processing” screen and valuation.');
-            // Next step (Step 3/4) will be added next.
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            showOk(ok2, 'Saved. Generating estimate…');
+
+            // Go to Processing
+            goStep(3);
         });
 
-        // Start user on Step 2 automatically if Step 1 already saved
+        // Mock estimate logic (temporary)
+        function computeMockEstimate(d) {
+            // VERY rough placeholder so we can complete the flow.
+            // Next step we replace this with /api/estimate (Cloudflare Worker + KV).
+            let basePPSF = 240; // generic nationwide starter
+            if (d.ptype && String(d.ptype).toLowerCase().includes('condo')) basePPSF = 260;
+
+            let val = (Number(d.sqft || 0) * basePPSF);
+
+            // Simple feature bumps
+            if (d.features?.pool) val *= 1.05;
+            if (d.features?.balcony) val *= 1.02;
+            if (d.features?.kitchen) val *= 1.03;
+            if (d.garageSpots === 1) val *= 1.01;
+            if (d.garageSpots === 2) val *= 1.02;
+            if (d.garageSpots === 3) val *= 1.03;
+
+            // HOA slight adjustment (placeholder)
+            if (d.hoa === 'yes' && d.hoaAmount) {
+                const hoa = Number(d.hoaAmount);
+                if (hoa > 1200) val *= 0.97;
+                else if (hoa > 700) val *= 0.985;
+            }
+
+            const low = val * 0.92;
+            const high = val * 1.08;
+            return { val, low, high };
+        }
+
+        // Processing animation
+        let timer = null;
+        function startProcessing() {
+            if (timer) clearInterval(timer);
+
+            const barFill = $('barFill');
+            const statusLine = $('statusLine');
+
+            const messages = [
+                'Verifying the address…',
+                'Gathering local market averages…',
+                'Comparing properties like yours…',
+                'Adjusting for size and features…',
+                'Analyzing HOA/condo costs…',
+                'Finalizing your estimate…'
+            ];
+
+            let pct = 0;
+            let msgIndex = 0;
+            statusLine.textContent = messages[0];
+            barFill.style.width = '0%';
+
+            timer = setInterval(() => {
+                pct += 4; // ~6-7 seconds total
+                if (pct > 100) pct = 100;
+                barFill.style.width = pct + '%';
+
+                if (pct % 16 === 0 && msgIndex < messages.length - 1) {
+                    msgIndex++;
+                    statusLine.textContent = messages[msgIndex];
+                }
+
+                if (pct >= 100) {
+                    clearInterval(timer);
+                    timer = null;
+
+                    const d = getDraft();
+                    const est = computeMockEstimate(d);
+                    const format = (n) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+
+                    $('estimateValue').textContent = format(est.val);
+                    $('estimateRange').textContent = `Estimated range: ${format(est.low)} – ${format(est.high)}`;
+
+                    setDraft({ estimate: { value: est.val, low: est.low, high: est.high, isMock: true } });
+                    goStep(4);
+                }
+            }, 250);
+        }
+
+        // CTA Forms (temporary: show success and enable redirect)
+        function clearCtaMessages() {
+            ['errEmail', 'okEmail', 'errCall', 'okCall'].forEach(id => { $(id).style.display = 'none'; $(id).textContent = ''; });
+        }
+        function showCtaError(id, msg) { $(id).textContent = msg; $(id).style.display = 'block'; }
+        function showCtaOk(id, msg) { $(id).textContent = msg; $(id).style.display = 'block'; }
+
+        $('emailCta').addEventListener('submit', (e) => {
+            e.preventDefault();
+            clearCtaMessages();
+            const name = $('name1').value.trim();
+            const email = $('email1').value.trim();
+            if (!name) return showCtaError('errEmail', 'Please enter your name.');
+            if (!email || !email.includes('@')) return showCtaError('errEmail', 'Please enter a valid email.');
+
+            setDraft({ leadChoice: 'email_report', lead: { name, email } });
+            showCtaOk('okEmail', 'Saved. Next step: we will send this to our backend (Formspree via Worker).');
+
+            // Optional auto-redirect after a short delay
+            setTimeout(() => { window.location.href = 'https://www.emourahomes.com'; }, 1200);
+        });
+
+        $('callCta').addEventListener('submit', (e) => {
+            e.preventDefault();
+            clearCtaMessages();
+            const name = $('name2').value.trim();
+            const phone = $('phone2').value.trim();
+            const best = $('best2').value.trim();
+            if (!name) return showCtaError('errCall', 'Please enter your name.');
+            if (!phone || phone.length < 7) return showCtaError('errCall', 'Please enter a valid phone number.');
+            if (!best) return showCtaError('errCall', 'Please select the best time to call.');
+
+            setDraft({ leadChoice: 'specialist_call', lead: { name, phone, best } });
+            showCtaOk('okCall', 'Saved. Next step: we will send this to our backend (Formspree via Worker).');
+
+            setTimeout(() => { window.location.href = 'https://www.emourahomes.com'; }, 1200);
+        });
+
+        // Auto-step: if step2 is complete, stay there; if estimate exists, show results
         (function autoStep() {
             const d = getDraft();
-            if (d.address && d.ptype) setTimeout(() => goStep(2), 50);
+            if (d.estimate && d.estimate.value) return goStep(4);
+            if (d.address && d.ptype) return goStep(2);
+            goStep(1);
         })();
     </script>
 </body>
