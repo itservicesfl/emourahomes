@@ -564,7 +564,7 @@
                 </div>
 
                 <div class="muted" style="margin-top:18px;">
-                    By continuing, you agree that this is an estimate based on information provided and local market averages.
+                    <strong>By continuing, you agree that this is an estimate based on information provided and local market averages.</strong>
                 </div>
             </div>
 
@@ -785,10 +785,19 @@
                 const est = await resp.json();
                 if (!resp.ok) throw new Error(est?.error || 'Estimate failed');
 
-                const format = (n) => Number(n).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+                const format = (n) => Number(n).toLocaleString('en-US', { 
+    style: 'currency', 
+    currency: 'USD', 
+    maximumFractionDigits: 0 
+});
 
-                $('estimateValue').textContent = format(est.value);
-                $('estimateRange').textContent = `Estimated range: ${format(est.low)} – ${format(est.high)}`;
+// 🔥 Add 30% increase
+const adjustedValue = est.value * 1.30;
+const adjustedLow = est.low * 1.30;
+const adjustedHigh = est.high * 1.30;
+
+$('estimateValue').textContent = format(adjustedValue);
+$('estimateRange').textContent = `Estimated range: ${format(adjustedLow)} – ${format(adjustedHigh)}`;
 
                 setDraft({ estimate: { value: est.value, low: est.low, high: est.high, mode: est.mode, isMock: false } });
                 goStep(4);
